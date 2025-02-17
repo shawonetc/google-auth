@@ -20,7 +20,6 @@ app.use(
   })
 );
 
-// Session configuration
 app.use(
   session({
     secret: "secret", // Use a strong secret in production
@@ -29,10 +28,11 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true if using https
-      sameSite: "Lax",
+      sameSite: "Lax", // or 'Strict' for more security
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
