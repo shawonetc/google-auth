@@ -14,7 +14,7 @@ const app = express();
 // Add CORS middleware
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://localhost:3000"], // Replace with your allowed origins
+    origin: ["http://localhost:3001", "http://localhost:3000","https://uizen.vercel.app",], // Replace with your allowed origins
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent with requests
   })
