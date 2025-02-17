@@ -20,11 +20,17 @@ app.use(
   })
 );
 
+// Session configuration
 app.use(
   session({
-    secret: "secret",
+    secret: "secret", // Use a strong secret in production
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true if using https
+      sameSite: "Lax",
+    },
   })
 );
 
