@@ -17,6 +17,6 @@
     "mongoose": "^8.9.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
-    "connect-mongo": "^5.0.0"  // ✅ MongoDB session storage যোগ করা হয়েছে
+    "connect-mongo": "^5.0.0" 
   }
 }
