@@ -34,7 +34,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // ✅ Vercel-এ https ব্যবহার হয়, তাই secure: true লাগবে
+      secure: process.env.NODE_ENV === "production" ? true : false,
       sameSite: "None", // ✅ Cross-Origin Request সমর্থন করার জন্য None দিতে হবে
     },
   })
