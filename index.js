@@ -25,12 +25,11 @@ app.use(
     secret: "secret", // Use a strong secret in production
     resave: false,
     saveUninitialized: false,
-   cookie: {
-  httpOnly: true,
-  secure: false, // Ensure false when using http in local development
-  sameSite: "Lax", // or 'Strict'
-}
-
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true if using https
+      sameSite: "Lax", // or 'Strict' for more security
+    },
   })
 );
 
