@@ -26,16 +26,16 @@ app.use(
   session({
     secret: "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "None",
-  maxAge: 24 * 60 * 60 * 1000, // 1 দিন
-}
-
+      httpOnly: true,  // কুকি শুধুমাত্র সার্ভার থেকে এক্সেসযোগ্য
+      secure: process.env.NODE_ENV === "production",  // production এ true হবে
+      sameSite: "None", // Cross-Origin সাপোর্টের জন্য
+      maxAge: 24 * 60 * 60 * 1000, // 1 দিন
+    },
   })
 );
+
 
 
 // ✅ Initialize Passport
