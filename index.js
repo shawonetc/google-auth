@@ -26,17 +26,19 @@ app.use(
   session({
     secret: "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI, // ✅ MongoDB-তে session store হবে
+      collectionName: "sessions",
+      ttl: 24 * 60 * 60, // 1 দিন পরে session expire হবে
+    }),
     cookie: {
-      httpOnly: true,  // কুকি শুধুমাত্র সার্ভার থেকে এক্সেসযোগ্য
-      secure: process.env.NODE_ENV === "production",  // production এ true হবে
-      sameSite: "None", // Cross-Origin সাপোর্টের জন্য
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // ✅ Vercel-এ https ব্যবহার হয়, তাই secure: true লাগবে
+      sameSite: "None", // ✅ Cross-Origin Request সমর্থন করার জন্য None দিতে হবে
     },
   })
 );
-
-
-
 
 // ✅ Initialize Passport
 app.use(passport.initialize());
