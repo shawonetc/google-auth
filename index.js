@@ -24,16 +24,17 @@ app.use(
 // ✅ Session Configuration with MongoDB
 app.use(
   session({
-    secret: "secret",
+    secret: "secret", // আপনার সিক্রেট কী
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true, // কুকি শুধুমাত্র সার্ভার থেকে এক্সেসযোগ্য হবে
-      secure: false,  // লোকালহোস্টে HTTPS ছাড়া secure:false হবে
-      sameSite: "None", // ক্রস-অরিজিন সাপোর্টের জন্য
+      secure: false,  // লোকালহোস্টে `secure: false` হবে (HTTPS ছাড়া)
+      sameSite: "None", // ক্রস-অরিজিন সাপোর্টের জন্য "None" দিন
     },
   })
 );
+
 
 
 // ✅ Initialize Passport
