@@ -26,7 +26,7 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("http://localhost:3001/profile"); // Redirect to profile after login
+    res.redirect("http://localhost:3001/test"); // Redirect to profile after login
   }
 );
 
