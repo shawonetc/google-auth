@@ -4,6 +4,7 @@ const passport = require("passport");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const MongoStore = require("connect-mongo");
 
 const passportConfig = require("./config/passportConfig");
 const mongoConfig = require("./config/mongoConfig");
@@ -11,35 +12,46 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Add CORS middleware
+const CLIENT_ORIGIN = [
+  "http://localhost:3001",
+  "http://localhost:3000",
+  "https://uizen.vercel.app",
+];
+
+// ✅ CORS Configuration
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://localhost:3000","https://uizen.vercel.app",], // Replace with your allowed origins
+    origin: CLIENT_ORIGIN,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies to be sent with requests
+    credentials: true, // Allow cookies
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// ✅ Session Configuration (Localhost + Production Support)
 app.use(
   session({
-    secret: "secret", // Use a strong secret in production
+    secret: process.env.SESSION_SECRET || "your_secret_key",
     resave: false,
     saveUninitialized: false,
-   cookie: {
-  httpOnly: true,
-  secure: false, // Ensure false when using http in local development
-  sameSite: "Lax", // or 'Strict'
-}
-
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI, // Store session in MongoDB
+      ttl: 14 * 24 * 60 * 60, // Session expires in 14 days
+    }),
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Production-এ true, Localhost-এ false
+      sameSite: "Lax",
+    },
   })
 );
-
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/", authRoutes); // Use the auth routes
+app.use("/", authRoutes); // Use authentication routes
 
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
