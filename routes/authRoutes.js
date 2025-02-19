@@ -20,13 +20,12 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// Google OAuth callback
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    // এখানে আর রিডিরেক্ট দেওয়া হচ্ছে না
-    // শুধু সেশন তৈরির পর success বা failure response পাঠানো যেতে পারে
-    res.send("Logged in successfully"); // সফল হলে এই বার্তা পাঠাবে
+    res.redirect("/"); // Redirect to profile after login
   }
 );
 
