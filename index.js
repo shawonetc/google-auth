@@ -24,17 +24,18 @@ app.use(
 // ✅ Session Configuration with MongoDB
 app.use(
   session({
-    secret: "secret",
+    secret: "secret",  // কুকির জন্য একটি সিক্রেট স্ট্রিং
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,  // কুকি শুধুমাত্র সার্ভার থেকে এক্সেসযোগ্য
-      secure: process.env.NODE_ENV === "production",  // production এ true হবে
+      secure: false,  // যদি HTTPS না থাকে, তবে সেটি false রাখতে হবে
       sameSite: "None", // Cross-Origin সাপোর্টের জন্য
-      maxAge: 24 * 60 * 60 * 1000, // 1 দিন
+      maxAge: 24 * 60 * 60 * 1000, // কুকির মেয়াদ 1 দিন
     },
   })
 );
+
 
 
 
