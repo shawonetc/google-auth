@@ -12,46 +12,41 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-const CLIENT_ORIGIN = [
-  "http://localhost:3001",
-  "http://localhost:3000",
-  "https://uizen.vercel.app",
-];
-
-// ✅ CORS Configuration
+// ✅ Add CORS middleware
 app.use(
   cors({
-    origin: CLIENT_ORIGIN,
+    origin: ["http://localhost:3001", "http://localhost:3000", "https://uizen.vercel.app"], // ✅ Vercel origin add করুন
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies
-    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // ✅ Cookies send করার অনুমতি দিন
   })
 );
 
-// ✅ Session Configuration (Localhost + Production Support)
+// ✅ Session Configuration with MongoDB
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
+    secret: "secret",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI, // Store session in MongoDB
-      ttl: 14 * 24 * 60 * 60, // Session expires in 14 days
+      mongoUrl: process.env.MONGO_URI, // ✅ MongoDB-তে session store হবে
+      collectionName: "sessions",
+      ttl: 24 * 60 * 60, // 1 দিন পরে session expire হবে
     }),
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Production-এ true, Localhost-এ false
-      sameSite: "Lax",
+      secure: process.env.NODE_ENV === "production", // ✅ Vercel-এ https ব্যবহার হয়, তাই secure: true লাগবে
+      sameSite: "None", // ✅ Cross-Origin Request সমর্থন করার জন্য None দিতে হবে
     },
   })
 );
 
+// ✅ Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/", authRoutes); // Use authentication routes
+app.use("/", authRoutes); // ✅ Use the auth routes
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
