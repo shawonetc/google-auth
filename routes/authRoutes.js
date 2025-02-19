@@ -20,15 +20,15 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+
 // Google OAuth callback
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("/profile"); // Redirect to profile after login
+    res.redirect("http://localhost:3001/profile"); // Redirect to profile after login
   }
 );
-
 
 // Logout route
 router.get("/logout", (req, res) => {
