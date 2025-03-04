@@ -20,17 +20,13 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.log("MongoDB Connection Error:", err));
 
 // CORS Configuration
-app.use(
-  cors({
-    origin: [
-      process.env.CLIENT_URL, // Frontend URL from .env file
-      "http://localhost:3000", // Allow localhost:3000
-      "http://localhost:3001", // Allow localhost:3001
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies
-  })
-);
+// Allow requests from your frontend origin
+app.use(cors({
+  origin: 'http://localhost:3001', // Replace with your frontend's URL if it's different
+  methods: ['GET', 'POST'], // Specify the methods you want to allow
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
+}));
+
 
 // Session Configuration (with MongoDB store)
 app.use(
