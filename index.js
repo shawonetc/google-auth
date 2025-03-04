@@ -13,16 +13,18 @@ const app = express();
 
 // Add CORS middleware
 app.use(
-  cors({
-    origin: [
-      "http://localhost:3001",  // Localhost frontend URL
-      "http://localhost:3000",  // Localhost frontend URL
-      process.env.FRONTEND_URL, // Frontend URL on Render
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies to be sent with requests
+  session({
+    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      httpOnly: false, // Allow JavaScript to access the cookie
+      secure: process.env.NODE_ENV === "production", // Secure in production
+      sameSite: "lax", // Control cross-site cookie behavior
+    },
   })
 );
+;
 
 app.use(
   session({
