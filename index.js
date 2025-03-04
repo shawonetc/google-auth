@@ -14,25 +14,25 @@ const app = express();
 // Add CORS middleware
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://localhost:3000"], // Replace with your allowed origins
+    origin: [
+      "http://localhost:3001",  // Localhost frontend URL
+      "http://localhost:3000",  // Localhost frontend URL
+      process.env.FRONTEND_URL, // Frontend URL on Render
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent with requests
   })
 );
 
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+https://google-auth-1.onrender.com/auth/google
+
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/", authRoutes); // Use the auth routes
 
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
