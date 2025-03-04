@@ -17,37 +17,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session Configuration with MongoDB Store
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "fallback_secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: 'sessions',
-      autoRemove: 'interval',
-      autoRemoveInterval: 10 // Remove expired sessions every 10 minutes
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      domain: process.env.NODE_ENV === "production" 
-        ? process.env.COOKIE_DOMAIN 
-        : undefined
-    }
-  })
-);
-
 // CORS Configuration
 const ALLOWED_ORIGINS = [
   "http://localhost:3000", 
   "http://localhost:3001",
-  process.env.FRONTEND_VERCEL_URL,
-  process.env.MAIN_DOMAIN
-].filter(Boolean); // Remove any undefined values
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(
   cors({
@@ -61,6 +36,21 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"]
+  })
+);
+
+// Session Configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "fallback_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    }
   })
 );
 
@@ -81,29 +71,42 @@ app.use((err, req, res, next) => {
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch((err) => console.error('MongoDB connection error:', err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  }
+};
 
 // Server Start
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
 
-// Graceful Shutdown
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    mongoose.connection.close(false, () => {
-      console.log('MongoDB connection closed');
-      process.exit(0);
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+// Export for Vercel serverless function
+module.exports = async (req, res) => {
+  await connectDB();
+  
+  // Handle the request
+  return new Promise((resolve, reject) => {
+    app(req, res, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
     });
   });
-});
-
-module.exports = app;
+};
