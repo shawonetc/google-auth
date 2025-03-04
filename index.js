@@ -26,16 +26,17 @@ app.use(
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
+    secret: process.env.SESSION_SECRET || "secret",  // Set a secure session secret
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Set secure cookie in production (Render)
+      secure: process.env.NODE_ENV === "production", // true for HTTPS
       sameSite: "lax", // Control cross-site cookie behavior
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
