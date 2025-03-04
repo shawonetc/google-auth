@@ -5,6 +5,7 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const cors = require('cors');
+const authRoutes = require('./routes/authRoutes')
 
 const app = express();
 
