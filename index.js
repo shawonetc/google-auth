@@ -14,7 +14,11 @@ const app = express();
 // Add CORS middleware
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://localhost:3000"], // Replace with your allowed origins
+    origin: [
+      "http://localhost:3001",  // Localhost frontend URL
+      "http://localhost:3000",  // Localhost frontend URL
+      process.env.FRONTEND_URL, // Frontend URL on Render
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent with requests
   })
@@ -22,9 +26,14 @@ app.use(
 
 app.use(
   session({
-    secret: "secret",
+    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+      secure: process.env.NODE_ENV === "production", // Set secure cookie in production (Render)
+      sameSite: "lax", // Control cross-site cookie behavior
+    },
   })
 );
 
@@ -33,6 +42,7 @@ app.use(passport.session());
 
 app.use("/", authRoutes); // Use the auth routes
 
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
