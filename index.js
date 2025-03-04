@@ -21,11 +21,16 @@ mongoose.connect(process.env.MONGO_URI, {
 // CORS Configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL, // Allowed frontend URL
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      process.env.CLIENT_URL, // ডিপ্লয় করা URL
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies
   })
 );
+
 
 // Session Configuration (with MongoDB store)
 app.use(
