@@ -4,9 +4,10 @@ const passport = require("passport");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const MongoStore = require("connect-mongo"); // Import MongoStore for session storage
 
-const passportConfig = require("./config/passportConfig");
-const mongoConfig = require("./config/mongoConfig");
+const passportConfig = require("./config/passportConfig"); // If you're using passport configuration here
+const mongoConfig = require("./config/mongoConfig"); // If you're using MongoDB config here
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
@@ -30,7 +31,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
+      mongoUrl: process.env.MONGO_URI, // MongoDB URI
       collectionName: "sessions",
     }),
     cookie: {
@@ -40,7 +41,6 @@ app.use(
     },
   })
 );
-
 
 app.use(passport.initialize());
 app.use(passport.session());
