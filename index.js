@@ -6,29 +6,47 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const cors = require('cors');
 
-const passportConfig = require('./config/passportConfig');
-const authRoutes = require('./routes/authRoutes');
-
 const app = express();
 
-// MongoDB Connection Function
+// Robust MongoDB Connection Function
 const connectDB = async () => {
+  // Get MongoDB URI from environment variables
+  const mongoURI = process.env.MONGODB_URI;
+
+  // Validate MongoDB URI
+  if (!mongoURI) {
+    console.error('❌ CRITICAL: MongoDB Connection String is Missing!');
+    console.error('Please set MONGODB_URI in your environment variables.');
+    
+    // Throw an error to prevent server startup
+    throw new Error('MongoDB URI is not defined');
+  }
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    // Connect with detailed logging and options
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     });
-    console.log('MongoDB Connected Successfully');
+
+    console.log('✅ MongoDB Connected Successfully');
   } catch (error) {
-    console.error('MongoDB Connection Error:', error);
+    console.error('❌ MongoDB Connection Error:', error);
+    
+    // Log specific connection details for debugging
+    console.error('Connection Details:', {
+      uri: mongoURI.replace(/\/\/.*:(.*)@/, '//[REDACTED]:[REDACTED]@'), // Mask credentials
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    // Exit process with failure
     process.exit(1);
   }
 };
 
-// Connect to MongoDB
-connectDB();
-
-// Comprehensive CORS Configuration
+// CORS Configuration
 app.use(cors({
   origin: [
     'http://localhost:3000', 
@@ -40,26 +58,26 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parsing middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session Configuration with Simplified Store
+// Session Configuration with Fallback
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback_secret_key',
+  secret: process.env.SESSION_SECRET || 'fallback_development_secret',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
     collectionName: 'sessions',
     autoRemove: 'interval',
-    autoRemoveInterval: 10 // in minutes
+    autoRemoveInterval: 10
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+    maxAge: 14 * 24 * 60 * 60 * 1000
   }
 }));
 
@@ -67,12 +85,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
-app.use('/', authRoutes);
-
-// Global Error Handler
+// Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Unhandled Error:', err);
   res.status(500).json({ 
     success: false, 
     message: 'Internal Server Error',
@@ -80,15 +95,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Server Configuration
-const PORT = process.env.PORT || 3000;
+// Connect to MongoDB before setting up routes
+(async () => {
+  try {
+    await connectDB();
 
-// Export for Vercel
+    // Routes (add after DB connection)
+    const authRoutes = require('./routes/authRoutes');
+    app.use('/', authRoutes);
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+})();
+
+// Vercel Serverless Function Export
 module.exports = app;
-
-// Only listen if not in Vercel environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
