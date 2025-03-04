@@ -4,10 +4,9 @@ const passport = require("passport");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const MongoStore = require("connect-mongo"); // Import MongoStore for session storage
 
-const passportConfig = require("./config/passportConfig"); // If you're using passport configuration here
-const mongoConfig = require("./config/mongoConfig"); // If you're using MongoDB config here
+const passportConfig = require("./config/passportConfig");
+const mongoConfig = require("./config/mongoConfig");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
@@ -15,11 +14,7 @@ const app = express();
 // Add CORS middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:3001",  // Localhost frontend URL
-      "http://localhost:3000",  // Localhost frontend URL
-      process.env.FRONTEND_URL, // Frontend URL on Render
-    ],
+    origin: ["http://localhost:3001", "http://localhost:3000"], // Replace with your allowed origins
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent with requests
   })
@@ -27,18 +22,9 @@ app.use(
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: "secret",
     resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI, // MongoDB URI
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Secure for production only
-      httpOnly: false, // Allow client-side access to cookies
-      sameSite: "none", // Fix cross-origin issues
-    },
+    saveUninitialized: true,
   })
 );
 
@@ -47,7 +33,6 @@ app.use(passport.session());
 
 app.use("/", authRoutes); // Use the auth routes
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
 });
