@@ -34,14 +34,12 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Secure is true for production, false for local
+      secure: process.env.NODE_ENV === "production", // Secure for production only
       httpOnly: false, // Allow client-side access to cookies
-      sameSite: "none", // Fix for cross-origin issues
+      sameSite: "none", // Fix cross-origin issues
     },
   })
 );
-
-
 
 
 app.use(passport.initialize());
