@@ -24,18 +24,7 @@ app.use(
   })
 );
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret",  // Set a secure session secret
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // true for HTTPS
-      sameSite: "lax", // Control cross-site cookie behavior
-    },
-  })
-);
+https://google-auth-1.onrender.com/auth/google
 
 
 app.use(passport.initialize());
