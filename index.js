@@ -34,12 +34,13 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: true, // HTTPS use করলে true দিতে হবে
-      httpOnly: false, // Client-side থেকে কুকি অ্যাক্সেস করার জন্য false
-      sameSite: "none", // Cross-origin issues ফিক্স করার জন্য "none"
+      secure: process.env.NODE_ENV === "production", // Secure is true for production, false for local
+      httpOnly: false, // Allow client-side access to cookies
+      sameSite: "none", // Fix for cross-origin issues
     },
   })
 );
+
 
 
 
