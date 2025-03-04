@@ -38,12 +38,13 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      httpOnly: true,
-      sameSite: "lax",
+      secure: true, // HTTPS use করলে true দিতে হবে
+      httpOnly: false, // Client-side থেকে কুকি অ্যাক্সেস করার জন্য false
+      sameSite: "none", // Cross-origin issues ফিক্স করার জন্য "none"
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
