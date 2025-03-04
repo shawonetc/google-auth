@@ -2,56 +2,37 @@ require("dotenv").config();
 const express = require("express");
 const passport = require("passport");
 const session = require("express-session");
-const cors = require("cors");
-const MongoStore = require("connect-mongo");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const passportConfig = require("./config/passportConfig");
+const mongoConfig = require("./config/mongoConfig");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log("MongoDB Connection Error:", err));
+// Add CORS middleware
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "http://localhost:3000"], // Replace with your allowed origins
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Allow cookies to be sent with requests
+  })
+);
 
-// CORS Configuration
-// Allow requests from your frontend origin
-app.use(cors({
-  origin: 'http://localhost:3001', // Replace with your frontend's URL if it's different
-  methods: ['GET', 'POST'], // Specify the methods you want to allow
-  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
-}));
-
-
-// Session Configuration (with MongoDB store)
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: "secret",
     resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      httpOnly: true,
-      sameSite: "lax",
-    },
+    saveUninitialized: true,
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/", authRoutes); // Using auth routes
+app.use("/", authRoutes); // Use the auth routes
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
 });
