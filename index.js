@@ -3,35 +3,55 @@ const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const MongoStore = require('connect-mongo');
+const cors = require('cors');
 
 const passportConfig = require('./config/passportConfig');
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
+// MongoDB Connection Function
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('MongoDB Connected Successfully');
+  } catch (error) {
+    console.error('MongoDB Connection Error:', error);
+    process.exit(1);
+  }
+};
+
+// Connect to MongoDB
+connectDB();
+
 // Comprehensive CORS Configuration
 app.use(cors({
   origin: [
     'http://localhost:3000', 
     'http://localhost:3001', 
-    'https://your-production-frontend.com',
-    /\.vercel\.app$/ // Supports all Vercel preview and production deployments
+    'https://your-production-domain.com',
+    /\.vercel\.app$/
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+  credentials: true
 }));
 
-// Enhanced Session Configuration
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session Configuration with Simplified Store
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'complex_and_unique_secret_key',
+  secret: process.env.SESSION_SECRET || 'fallback_secret_key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60, // 14 days
+    collectionName: 'sessions',
     autoRemove: 'interval',
     autoRemoveInterval: 10 // in minutes
   }),
@@ -39,16 +59,9 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
-    domain: process.env.NODE_ENV === 'production' 
-      ? '.yourdomain.com'  // Use your root domain
-      : 'localhost'
+    maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
   }
 }));
-
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Passport Initialization
 app.use(passport.initialize());
@@ -63,24 +76,19 @@ app.use((err, req, res, next) => {
   res.status(500).json({ 
     success: false, 
     message: 'Internal Server Error',
-    error: process.env.NODE_ENV === 'production' ? {} : err.message
+    error: process.env.NODE_ENV !== 'production' ? err.message : {}
   });
 });
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB Connected Successfully'))
-.catch((err) => console.error('MongoDB Connection Error:', err));
-
 // Server Configuration
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || 'localhost';
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running at http://${HOST}:${PORT}`);
-});
-
+// Export for Vercel
 module.exports = app;
+
+// Only listen if not in Vercel environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
