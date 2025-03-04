@@ -24,7 +24,23 @@ app.use(
   })
 );
 
-https://google-auth-1.onrender.com/auth/google
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      secure: true, // HTTPS use করলে true দিতে হবে
+      httpOnly: false, // Client-side থেকে কুকি অ্যাক্সেস করার জন্য false
+      sameSite: "none", // Cross-origin issues ফিক্স করার জন্য "none"
+    },
+  })
+);
+
 
 
 app.use(passport.initialize());
