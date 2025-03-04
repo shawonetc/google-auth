@@ -26,16 +26,21 @@ app.use(
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
     cookie: {
-      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Set secure cookie in production (Render)
-      sameSite: "lax", // Control cross-site cookie behavior
+      secure: process.env.NODE_ENV === "production", // Secure for production only
+      httpOnly: false, // Allow client-side access to cookies
+      sameSite: "none", // Fix cross-origin issues
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
