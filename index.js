@@ -15,22 +15,22 @@ const app = express();
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => console.log("MongoDB Connected"))
+})
+  .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("MongoDB Connection Error:", err));
 
 // CORS Configuration
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      process.env.CLIENT_URL, // ডিপ্লয় করা URL
+      process.env.CLIENT_URL, // Frontend URL from .env file
+      "http://localhost:3000", // Allow localhost:3000
+      "http://localhost:3001", // Allow localhost:3001
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies
   })
 );
-
 
 // Session Configuration (with MongoDB store)
 app.use(
@@ -43,13 +43,12 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: true, // HTTPS use করলে true দিতে হবে
-      httpOnly: false, // Client-side থেকে কুকি অ্যাক্সেস করার জন্য false
-      sameSite: "none", // Cross-origin issues ফিক্স করার জন্য "none"
+      secure: process.env.NODE_ENV === "production", // HTTPS only in production
+      httpOnly: true,
+      sameSite: "lax",
     },
   })
 );
-
 
 app.use(passport.initialize());
 app.use(passport.session());
