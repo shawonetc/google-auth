@@ -1,48 +1,40 @@
-require("dotenv").config();
 const express = require("express");
+const router = express.Router();
 const passport = require("passport");
-const session = require("express-session");
-const mongoose = require("mongoose");
-const cors = require("cors");
 
-const passportConfig = require("./config/passportConfig");
-const mongoConfig = require("./config/mongoConfig");
-const authRoutes = require("./routes/authRoutes");
+// Protected route to get user profile
+router.get("/profile", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
 
-const app = express();
-
-// Add CORS middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3001",  // Localhost frontend URL
-      "http://localhost:3000",  // Localhost frontend URL
-      process.env.FRONTEND_URL, // Frontend URL on Render
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies to be sent with requests
-  })
-);
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Set secure cookie in production (Render)
-      sameSite: "lax", // Control cross-site cookie behavior
-    },
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use("/", authRoutes); // Use the auth routes
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  res.json({
+    message: "User profile retrieved successfully",
+    user: req.user, // User data from session
+  });
 });
+
+// Google OAuth login
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+
+// Google OAuth callback
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    res.redirect("http://localhost:3001/test"); // Redirect to profile after login
+  }
+);
+
+// Logout route
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("/"); // Redirect to homepage after logout
+  });
+});
+
+module.exports = router;
