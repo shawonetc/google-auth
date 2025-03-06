@@ -17,6 +17,7 @@ app.use(
     origin: [
       "http://localhost:3001",  // Localhost frontend URL
       "http://localhost:3000",  // Localhost frontend URL
+      "https://uizen.vercel.app",
       process.env.FRONTEND_URL, // Frontend URL on Render
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
