@@ -1,8 +1,8 @@
 const express = require("express");
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-require("dotenv").config();
+const mongoose = require("mongoose");
+const User = require("../models/User"); // Ensure the correct path
 
 const router = express.Router();
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -10,39 +10,39 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+// 🔹 Google Login Route
 router.post("/auth/google", async (req, res) => {
   const { token } = req.body;
 
   try {
+    // Verify Google Token
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    const userId = payload.sub;
+    const googleId = payload.sub;
     const email = payload.email;
     const name = payload.name;
-    const picture = payload.picture;
+    const picture = payload.picture; // Google Profile Picture
 
-    // Check if user exists in the database
-    let user = await User.findOne({ googleId: userId });
+    // 🔍 Check if the user exists
+    let user = await User.findOne({ googleId });
 
-    if (!user) {
-      // Register new user with picture
+    if (user) {
+      console.log("User exists. Updating profile picture...");
+      user.picture = picture; // Update the picture on every login
+      await user.save();
+    } else {
+      console.log("New user. Creating an account...");
       user = new User({
-        googleId: userId,
+        googleId,
         email,
         name,
         picture,
       });
       await user.save();
-    } else {
-      // Update picture if changed
-      if (user.picture !== picture) {
-        user.picture = picture;
-        await user.save();
-      }
     }
 
     // Generate JWT Token
@@ -53,7 +53,7 @@ router.post("/auth/google", async (req, res) => {
     );
 
     res.json({
-      message: "User authenticated",
+      message: "User authenticated successfully",
       jwt_token: jwtToken,
       user: { id: user.id, email, name, picture },
     });
@@ -62,6 +62,7 @@ router.post("/auth/google", async (req, res) => {
   }
 });
 
+// 🔹 Get Profile Route
 router.get("/profile", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1];
 
@@ -70,6 +71,7 @@ router.get("/profile", async (req, res) => {
   }
 
   try {
+    // Verify the token
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id);
 
@@ -82,7 +84,7 @@ router.get("/profile", async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        picture: user.picture,
+        picture: user.picture, // Return the updated profile picture
       },
     });
   } catch (error) {
