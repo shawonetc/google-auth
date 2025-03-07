@@ -37,19 +37,26 @@ router.post("/auth/google", async (req, res) => {
       });
       await user.save();
     } else {
-      // Update existing user's profile picture if it exists in the payload
-      if (picture && user.profilePicture !== picture) {
-        user.profilePicture = picture;
-        await user.save();
-      }
+      // Always update all user information to ensure everything is in sync
+      const updatedFields = {
+        name: name, // Update name in case it changed in Google
+        email: email, // Update email in case it changed in Google
+        profilePicture: picture, // Update profile picture 
+      };
+      
+      // Apply updates to user object
+      Object.assign(user, updatedFields);
+      
+      // Save the updated user
+      await user.save();
     }
 
     // Generate JWT Token
     const jwtToken = jwt.sign(
       { 
         id: user.id, 
-        email, 
-        name, 
+        email: user.email, 
+        name: user.name, 
         profilePicture: user.profilePicture 
       }, 
       JWT_SECRET, 
@@ -63,8 +70,8 @@ router.post("/auth/google", async (req, res) => {
       jwt_token: jwtToken,
       user: { 
         id: user.id, 
-        email, 
-        name, 
+        email: user.email, 
+        name: user.name, 
         profilePicture: user.profilePicture 
       },
     });
@@ -91,13 +98,16 @@ router.get("/profile", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return the user profile data
+    // Return the user profile data with all available fields
     res.json({
       user: {
         id: user.id,
+        googleId: user.googleId,
         email: user.email,
         name: user.name,
-        profilePicture: user.profilePicture, // Updated to match the schema field name
+        profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       },
     });
   } catch (error) {
