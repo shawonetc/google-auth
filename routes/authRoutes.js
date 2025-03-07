@@ -35,8 +35,13 @@ router.post("/auth/google", async (req, res) => {
         name,
         profilePicture: picture, // Updated to match the schema field name
       });
-
       await user.save();
+    } else {
+      // Update existing user's profile picture if it exists in the payload
+      if (picture && user.profilePicture !== picture) {
+        user.profilePicture = picture;
+        await user.save();
+      }
     }
 
     // Generate JWT Token
