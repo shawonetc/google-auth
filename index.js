@@ -7,7 +7,8 @@ const cors = require("cors");
 
 const passportConfig = require("./config/passportConfig");
 const mongoConfig = require("./config/mongoConfig");
-const auth = require("./routes/auth);
+const auth = require("./routes/auth"); // কোটা ঠিক করে বন্ধ করো
+
 
 const app = express();
 
