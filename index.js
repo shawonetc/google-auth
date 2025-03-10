@@ -7,7 +7,7 @@ const cors = require("cors");
 
 const passportConfig = require("./config/passportConfig");
 const mongoConfig = require("./config/mongoConfig");
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/auth);
 
 const app = express();
 
@@ -41,7 +41,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/", authRoutes); // Use the auth routes
+app.use("/", auth); // Use the auth routes
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
