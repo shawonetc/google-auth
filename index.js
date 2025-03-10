@@ -29,16 +29,17 @@ app.use(
 // Set up express session
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret", // Make sure to set this in your .env
+    secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: true,
     cookie: {
-      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Set secure cookie in production (Render)
-      sameSite: "lax", // Control cross-site cookie behavior
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" ? true : false, // Only secure in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 'none' for cross-origin in production
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
