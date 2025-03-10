@@ -11,15 +11,20 @@ const auth = require("./routes/auth"); // Ensure this path is correct
 
 const app = express();
 
-// Manually set CORS headers
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000"); // Replace with your front-end domain
-  res.setHeader("Access-Control-Allow-Credentials", "true"); // Allow credentials (cookies, authorization headers, etc.)
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow these HTTP methods
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow these headers
+// Add CORS middleware
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3001",  // Localhost frontend URL
+      "http://localhost:3000",  // Localhost frontend URL
+      "https://uizen.vercel.app",
+      process.env.FRONTEND_URL, // Frontend URL on Render
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Allow cookies to be sent with requests
+  })
+);
 
-  next(); // Proceed to the next middleware or route handler
-});
 
 // Set up express session
 app.use(
